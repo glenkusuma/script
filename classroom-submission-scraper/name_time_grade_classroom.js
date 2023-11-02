@@ -1,3 +1,9 @@
+/** 
+ * Google Classroom Assignment Submission Scraper v1.0
+ * Documentation : https://github.com/glenkusuma/script/tree/main/classroom-submission-scraper#readme
+ * Created by github.com/glenkusuma
+ */
+
 // Constants for time delay and loop limit
 const TIME_DELAY = 1000; // 1 second
 const LOOP_LIMIT = 30;

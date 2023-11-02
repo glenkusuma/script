@@ -1,6 +1,7 @@
-# Google Classroom Assignment Submission Scraper
+# Google Classroom Assignment Submission Scraper v1.0
 
-This JavaScript script allows you to scrape and extract student name, submission time, and grades from Google Classroom. You have the option to use either the full script [`name_time_grade_classroom.js`](./name_time_grade_classroom.js) or the minified version [`gcr-scraper-min.js`](./gcr-scraper-min.js). The minified version is provided for convenience and results in a smaller script size, which can be beneficial for certain use cases.
+This JavaScript script allows you to scrape and extract student name, submission time, and grades from Google Classroom. It automates the process of navigating through assignments and collects relevant data. The scraped data can be saved as a CSV file for further analysis.
+You have the option to use either the full script [`name_time_grade_classroom.js`](./name_time_grade_classroom.js) or the minified version [`gcr-scraper-min.js`](./gcr-scraper-min.js). The minified version is provided for convenience and results in a smaller script size, which can be beneficial for certain use cases.
 
 ## Prerequisites
 
@@ -13,18 +14,38 @@ Follow these steps to use the full script:
 
 1. Log in to your Google Classroom account using a web browser.
 
-2. Open the assignment you want to scrape data from.
+2. Navigate to the assignment's student works' page. You can do this by opening a URL in the following format:
+   `https://classroom.google.com/c/{courseId}/a/{assignmentId}/submissions/by-status/and-sort-first-name/all`
 
 3. Open the browser's developer console:
    - Google Chrome: Press `Ctrl+Shift+J` or `Cmd+Option+J` (on Mac).
    - Mozilla Firefox: Press `Ctrl+Shift+K` or `Cmd+Option+K` (on Mac).
    - Microsoft Edge: Press `Ctrl+Shift+J` or `Cmd+Option+J` (on Mac).
 
-4. Copy and paste the entire contents of [`name_time_grade_classroom.js`](./name_time_grade_classroom.js) into the console.
+4. Copy and paste the following code into the console and press `Enter`. This code will redirect you to the appropriate assignment grading detail page:
 
-5. Press `Enter` to run the script. It will start collecting data and clicking the "Next" button until the button is disabled or the loop limit is reached.
+```javascript
+// Get the current URL
+const currentURL = window.location.href;
 
-6. The data will be displayed in the console, and a CSV representation will be generated and printed to the console as well.
+// Split the current URL by '/'
+const parts = currentURL.split('/');
+
+// Extract the relevant parts
+const courseId = parts[4];
+const assignmentId = parts[6];
+
+// Construct the new URL
+const newURL = `https://classroom.google.com/g/tg/${courseId}/${assignmentId}`;
+
+// Redirect to the new URL
+window.location.href = newURL;
+```
+5. Copy and paste the entire contents of [`name_time_grade_classroom.js`](./name_time_grade_classroom.js) into the console.
+
+6. Press `Enter` to run the script. It will start collecting data and clicking the "Next" button until the button is disabled or the loop limit is reached.
+
+7. The data will be displayed in the console, and a CSV representation will be generated and printed to the console as well.
 
 ## Using the Minified Version
 
