@@ -1,5 +1,5 @@
 /**
- * Google Classroom Assignment Submission Scraper v1.1.0
+ * Google Classroom Assignment Submission Scraper v1.1.1
  * Documentation: https://github.com/glenkusuma/script/tree/main/classroom-submission-scraper#readme
  * Created by github.com/glenkusuma
  */
@@ -18,7 +18,7 @@ function ScrapeGrade() {
 
     // Create an array to store assignment data
     const dataArray = [];
- 
+
     /**
      * Clicks the "Next" button with a specified time delay.
      * @returns {boolean} True if the button was clicked; false if the button is disabled.
@@ -48,7 +48,7 @@ function ScrapeGrade() {
 
     /**
      * Retrieves the names of attached files sorted by extension.
-     * @returns {string} A string containing attached file names separated by ';'.
+     * @returns {string} A string containing attached file names separated by '||'.
      */
     function getAttachedFileNames() {
       // Select the parent div element for file attachments
@@ -72,10 +72,10 @@ function ScrapeGrade() {
         fileNamesArray.push(fileName);
       });
 
-      // Sort the file names by extension
+      // Sort the unique file names by extension
       fileNamesArray.sort((a, b) => {
-        const extA = a.split('.').pop();
-        const extB = b.split('.').pop();
+        const extA = a.split(': ')[0].toLowerCase();
+        const extB = b.split(': ')[0].toLowerCase();
         return extA.localeCompare(extB);
       });
 
@@ -88,7 +88,6 @@ function ScrapeGrade() {
      * @returns {string} The profile image of the student.
      */
     function getProfileImage() {
-
       const nameParentDiv = document.querySelector('div.A39x1.ScX2If.LMgvRb.KKjvXb[jsname="wQNmvb"]');
 
       // Check if the name parent div element exists
@@ -106,8 +105,6 @@ function ScrapeGrade() {
 
       return `=IMAGE("` + imgDiv.src + `")`;
     }
-  
-
 
     /**
      * Retrieves the name of the student.
@@ -187,7 +184,7 @@ function ScrapeGrade() {
         // Create an object to store the assignment data
         const data = {
           Name: getName(),
-          ProfileImage: getProfileImage(), 
+          ProfileImage: getProfileImage(),
           Time: getTime(),
           Grade: getGrade(),
           AttachedFileNames: getAttachedFileNames(),
@@ -219,9 +216,9 @@ function ScrapeGrade() {
 }
 
 /**
- * Converts an array of objects to a CSV string.
+ * Converts an array of objects to a CSV string with dynamic headers based on file formats.
  * @param {Array} dataArray - An array of objects.
- * @returns {string} A CSV string representation of the data.
+ * @returns {string} A CSV string representation of the data with dynamic headers.
  */
 function convertToCSV(dataArray) {
   if (dataArray.length === 0) {
@@ -229,8 +226,52 @@ function convertToCSV(dataArray) {
     return "";
   }
 
-  const headers = Object.keys(dataArray[0]);
-  const csvContent = [headers.join(';')].concat(dataArray.map(item => headers.map(key => item[key]).join(';'))).join('\n');
+  // Extract all unique file formats from the dataArray
+  const uniqueFileFormats = new Set();
+  dataArray.forEach(item => {
+    const fileNames = item.AttachedFileNames.split('||');
+    fileNames.forEach(fileName => {
+      const format = fileName.split(': ')[0].toLowerCase();
+      if (format) {
+        uniqueFileFormats.add(format);
+      }
+    });
+  });
+
+  // Sort the unique file formats alphabetically
+  const sortedFormats = Array.from(uniqueFileFormats).sort();
+
+  // Create the header row with dynamic headers
+  const headers = ['Name', 'ProfileImage', 'Time', 'Grade', ...sortedFormats];
+
+  // Create a mapping of file formats to their respective columns
+  const formatToColumn = {};
+  sortedFormats.forEach((format, index) => {
+    formatToColumn[format] = index + 4; // Add 4 to account for the standard columns
+  });
+
+  // Generate the CSV content with dynamic headers
+  const csvRows = dataArray.map(item => {
+    const rowData = headers.map(header => {
+      if (header === 'Name') return item.Name;
+      if (header === 'ProfileImage') return item.ProfileImage;
+      if (header === 'Time') return item.Time;
+      if (header === 'Grade') return item.Grade;
+
+      // For file format columns
+      const format = header.toLowerCase();
+      const fileNames = item.AttachedFileNames.split('||');
+      const filesWithFormat = fileNames
+        .filter(fileName => fileName.toLowerCase().startsWith(format))
+        .map(fileName => fileName.split(': ')[1])
+        .join('||');
+      return filesWithFormat || ''; // Return the file names or an empty string
+    });
+
+    return rowData.join(';');
+  });
+
+  const csvContent = [headers.join(';')].concat(csvRows).join('\n');
   return csvContent;
 }
 
