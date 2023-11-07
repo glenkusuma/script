@@ -1,4 +1,4 @@
-# Google Classroom Assignment Submission Scraper v1.0
+# Google Classroom Assignment Submission Scraper v1.1
 
 This JavaScript script allows you to scrape and extract student name, submission time, and grades from Google Classroom. It automates the process of navigating through assignments and collects relevant data. The scraped data can be saved as a CSV file for further analysis.
 You have the option to use either the full script [`name_time_grade_classroom.js`](./name_time_grade_classroom.js) or the minified version [`gcr-scraper-min.js`](./gcr-scraper-min.js). The minified version is provided for convenience and results in a smaller script size, which can be beneficial for certain use cases.
@@ -60,14 +60,17 @@ You can customize the `TIME_DELAY` and `LOOP_LIMIT` constants at the beginning o
 The data collected will include:
 
 - Student name
+- Profile image
 - Submission time
-- Grade (if available)
+- Grade
+- File Attachments
 
 The data will be displayed in the console and formatted as a CSV string.
 
 ## Saving Data
 
 To save the scraped data as a CSV file, you can:
+
 1. Copy the CSV data from the console and paste it into a text file. Save the file with a `.csv` extension.
 2. Manually copy the data from the console to a spreadsheet application (e.g., Microsoft Excel, Google Sheets) and save it as a CSV file.
 
@@ -77,7 +80,7 @@ This script is for educational and informational purposes only. It should be use
 
 ## Author
 
-- [Glen Kusuma](https://github.com/glenkusuma)
+This Script is created with ❤️ by [Glen Kusuma](https://github.com/glenkusuma).
 
 ## License
 
