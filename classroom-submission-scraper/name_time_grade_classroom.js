@@ -1,12 +1,13 @@
 /**
- * Google Classroom Assignment Submission Scraper v1.1.1
+ * Google Classroom Assignment Submission Scraper v1.2.0
  * Documentation: https://github.com/glenkusuma/script/tree/main/classroom-submission-scraper#readme
  * Created by github.com/glenkusuma
  */
 
-// Constants for time delay and loop limit
+// Constants for time delay, loop limit, and history modal delay
 const TIME_DELAY = 1000; // 1 second
 const LOOP_LIMIT = 30;
+const GET_HISTORY_DELAY = 500; // 0.5 second
 
 /**
  * Scrapes Google Classroom assignment data including name, time, grade, and attached file names.
@@ -47,8 +48,25 @@ function ScrapeGrade() {
     }
 
     /**
+     * Opens the history modal.
+     */
+    function openHistoryModal() {
+      const seeHistoryButton = document.querySelector('span[jscontroller="SIlaZd"]');
+      seeHistoryButton.click();
+    }
+
+    /**
+     * Closes the history modal.
+     */
+    function closeHistoryModal() {
+      const modal = document.querySelector('div[jscontroller="N5Lqpc"]');
+      const closeHistoryButton = modal.querySelector('div[jsname="c6xFrd"]').querySelector('div[role="button"]');
+      closeHistoryButton.click();
+    }
+
+    /**
      * Retrieves the names of attached files sorted by extension.
-     * @returns {string} A string containing attached file names separated by '||'.
+     * @returns {string} A string containing attached file names separated by ';'.
      */
     function getAttachedFileNames() {
       // Select the parent div element for file attachments
@@ -72,10 +90,10 @@ function ScrapeGrade() {
         fileNamesArray.push(fileName);
       });
 
-      // Sort the unique file names by extension
+      // Sort the file names by extension
       fileNamesArray.sort((a, b) => {
-        const extA = a.split(': ')[0].toLowerCase();
-        const extB = b.split(': ')[0].toLowerCase();
+        const extA = a.split('.').pop();
+        const extB = b.split('.').pop();
         return extA.localeCompare(extB);
       });
 
@@ -175,26 +193,60 @@ function ScrapeGrade() {
       }
     }
 
+    /**
+     * Function to get data from the modal as a string
+     * @returns {string} A string representation of modal data.
+     */
+    function getHistoryDataAsStringFromModal() {
+      // Assuming the modal is already open
+      // Access the modal elements
+      const modal = document.querySelector('div[jscontroller="N5Lqpc"]');
+      const historyTable = modal.querySelector('table.uLriWc');
+  
+      // Extract data from the table as a string
+      const rows = historyTable.querySelectorAll('tr.CpNN1d') // Reverse rows;
+      let modalDataAsString = "";
+  
+      for (let index = rows.length - 1; index >= 0; index--) {
+        const row = rows[index];
+        const cells = row.querySelectorAll('td.MGOEm');
+        const rowData = Array.from(cells).map(cell => cell.textContent.trim());
+        modalDataAsString += `"${rowData.join('", "')}"`
+        modalDataAsString += index > 0 ? ";" : "";
+      }
+      return modalDataAsString;
+    }
+
     // Continue scraping and clicking until the button is disabled or the loop count reaches the specified limit
     let continueScraping = true;
     function scrapeAndClick() {
       if (continueScraping && loopCount < LOOP_LIMIT) {
         loopCount++;
 
+        openHistoryModal()
+		
+		setTimeout(()=> {
+		
         // Create an object to store the assignment data
-        const data = {
-          Name: getName(),
-          ProfileImage: getProfileImage(),
-          Time: getTime(),
-          Grade: getGrade(),
-          AttachedFileNames: getAttachedFileNames(),
-        };
-
+		const data = {
+      Name: getName(),
+      ProfileImage: getProfileImage(), 
+      Time: getTime(),
+      Grade: getGrade(),
+      AttachedFileNames: getAttachedFileNames(),
+		  History: getHistoryDataAsStringFromModal(), // Add modal data to the assignment data
+		};
+	
+		closeHistoryModal()
+		
+		
         // Log all the data
         console.log("Name:", data.Name);
         console.log("Time:", data.Time);
         console.log("Grade:", data.Grade);
+        console.log("History:", data.History);
         console.log("Attached File Names:", data.AttachedFileNames);
+        
 
         // Save all data in the array
         dataArray.push(data);
@@ -204,7 +256,9 @@ function ScrapeGrade() {
 
         // Continue scraping and clicking after the delay
         setTimeout(scrapeAndClick, TIME_DELAY);
-      } else {
+    
+    }, GET_HISTORY_DELAY);
+    } else {
         console.log("Loop:", loopCount, "has been executed.");
         resolve(dataArray);
       } // Resolve the promise with the data array
@@ -216,9 +270,9 @@ function ScrapeGrade() {
 }
 
 /**
- * Converts an array of objects to a CSV string with dynamic headers based on file formats.
+ * Converts an array of objects to a CSV string.
  * @param {Array} dataArray - An array of objects.
- * @returns {string} A CSV string representation of the data with dynamic headers.
+ * @returns {string} A CSV string representation of the data.
  */
 function convertToCSV(dataArray) {
   if (dataArray.length === 0) {
@@ -242,7 +296,7 @@ function convertToCSV(dataArray) {
   const sortedFormats = Array.from(uniqueFileFormats).sort();
 
   // Create the header row with dynamic headers
-  const headers = ['Name', 'ProfileImage', 'Time', 'Grade', ...sortedFormats];
+  const headers = ['Name', 'ProfileImage', 'Time', 'Grade', ...sortedFormats, 'History'];
 
   // Create a mapping of file formats to their respective columns
   const formatToColumn = {};
@@ -257,6 +311,7 @@ function convertToCSV(dataArray) {
       if (header === 'ProfileImage') return item.ProfileImage;
       if (header === 'Time') return item.Time;
       if (header === 'Grade') return item.Grade;
+      if (header === 'History') return item.History;
 
       // For file format columns
       const format = header.toLowerCase();
