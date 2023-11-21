@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2023-11-21
+
+### Added
+
+* New scrape data feature History ([4c284ae](https://github.com/glenkusuma/script/commit/4c284aebb1c02d2b581bc57f43f389af052fe00a))
+* New GET_HISTORY_DELAY Constant ([4c284ae](https://github.com/glenkusuma/script/commit/4c284aebb1c02d2b581bc57f43f389af052fe00a))
+
 ## [1.1.1] - 2023-11-07
 
 ### Added
